@@ -10,6 +10,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,8 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
+
+import com.buildware.widget.indeterm.IndeterminateCheckBox;
 
 // Eclipse wanted me to use a sparse array instead of my hashmaps, I just suppressed that suggestion
 @SuppressLint("UseSparseArrays")
@@ -119,6 +122,21 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
             groupViewHolder = new GroupViewHolder();
 
             groupViewHolder.mGroupText = (TextView) convertView.findViewById(R.id.lblListHeader);
+
+            groupViewHolder.mCheckBox = (IndeterminateCheckBox) convertView.findViewById(R.id.lstcheckBox1);
+
+            groupViewHolder.mCheckBox .setOnStateChangedListener(new IndeterminateCheckBox.OnStateChangedListener(){
+                public void onStateChanged(IndeterminateCheckBox check, @Nullable Boolean state) {
+                    if (state == null) {
+                        // The new state is 'indeterminate'
+                    } else if (state) {
+                        System.out.println("Checked");
+                        // The new state is 'checked'
+                    } else {
+                        // The new state is 'unchecked'
+                    }
+                }
+            });
 
             convertView.setTag(groupViewHolder);
         } else {
@@ -262,6 +280,7 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
     public final class GroupViewHolder {
 
         TextView mGroupText;
+        IndeterminateCheckBox mCheckBox;
     }
 
     public final class ChildViewHolder {

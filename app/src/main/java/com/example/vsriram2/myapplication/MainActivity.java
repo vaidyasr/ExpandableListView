@@ -1,26 +1,33 @@
 package com.example.vsriram2.myapplication;
 
 
-        import java.util.ArrayList;
-        import java.util.HashMap;
-        import java.util.List;
-        import android.app.Activity;
-        import android.os.Bundle;
-        import android.view.View;
-        import android.widget.Button;
-        import android.widget.ExpandableListView;
-        import android.widget.ExpandableListView.OnChildClickListener;
-        import android.widget.ExpandableListView.OnGroupClickListener;
-        import android.widget.ExpandableListView.OnGroupCollapseListener;
-        import android.widget.ExpandableListView.OnGroupExpandListener;
-        import android.widget.TextView;
-        import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.ExpandableListView.OnGroupClickListener;
+import android.widget.ExpandableListView.OnGroupCollapseListener;
+import android.widget.ExpandableListView.OnGroupExpandListener;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.buildware.widget.indeterm.IndeterminateCheckBox;
 
 public class MainActivity extends Activity {
 
-  //  ExpandableListAdapter listAdapter;
+    //  ExpandableListAdapter listAdapter;
     ExpListViewAdapterWithCheckbox listAdapter;
     ExpandableListView expListView;
+    IndeterminateCheckBox indetermCheck;
     ArrayList<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
 
@@ -91,23 +98,31 @@ public class MainActivity extends Activity {
                                 listDataHeader.get(groupPosition)).get(
                                 childPosition), Toast.LENGTH_SHORT)
                         .show();
-
+                if (v != null) {
+                    CheckBox checkBox = (CheckBox) v.findViewById(R.id.lstcheckBox);
+                    checkBox.setChecked(!checkBox.isChecked());
+                    ViewGroup vg = (ViewGroup) v.getParent();
+                    IndeterminateCheckBox indetermCheck = (IndeterminateCheckBox) vg.findViewById(R.id.lstcheckBox1);
+                    indetermCheck.setIndeterminate(true);
+                    if (listAdapter.getNumberOfCheckedItemsInGroup(groupPosition) == 0)
+                        indetermCheck.setIndeterminate(false);
+                }
                 return false;
             }
         });
 
+
         Button button = (Button) findViewById(R.id.button);
-       final TextView textView = (TextView) findViewById(R.id.textView);
+        final TextView textView = (TextView) findViewById(R.id.textView);
 
 
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                int count =0;
-                for(int mGroupPosition =0; mGroupPosition < listAdapter.getGroupCount(); mGroupPosition++)
-                {
-                    count = count +  listAdapter.getNumberOfCheckedItemsInGroup(mGroupPosition);
+                int count = 0;
+                for (int mGroupPosition = 0; mGroupPosition < listAdapter.getGroupCount(); mGroupPosition++) {
+                    count = count + listAdapter.getNumberOfCheckedItemsInGroup(mGroupPosition);
                 }
-                textView.setText(""+count);
+                textView.setText("" + count);
             }
         });
 
