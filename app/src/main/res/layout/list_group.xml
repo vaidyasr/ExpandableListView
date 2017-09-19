@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground"
+    android:descendantFocusability="blocksDescendants">
+
+    <TextView
+        android:id="@+id/lblListHeader"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:layout_marginRight="48dp"
+        android:layout_marginEnd="48dp"
+        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+        android:text="New Text"
+        android:textSize="17sp"
+        android:textColor="#000000" />
+
+    <com.buildware.widget.indeterm.IndeterminateCheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:focusable="false"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:paddingRight="16dp"
+        android:id="@+id/lstcheckBox1"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:text=""
+        app:indeterminate="true"/>
+    
+</RelativeLayout>
