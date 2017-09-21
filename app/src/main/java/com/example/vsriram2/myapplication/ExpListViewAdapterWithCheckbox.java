@@ -4,6 +4,7 @@ package com.example.vsriram2.myapplication;
 /**
  * Created by dbhat on 15-03-2016.
  */
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,7 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
     // Hashmap for keeping track of our checkbox check states
     private HashMap<Integer, boolean[]> mChildCheckStates;
+    private HashMap<Integer, IndeterminateCheckBox> mGroupCheckStates;
 
     // Our getChildView & getGroupView use the viewholder patter
     // Here are the viewholders defined, the inner classes are
@@ -60,7 +62,7 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
     /*  Here's the constructor we'll use to pass in our calling
      *  activity's context, group items, and child items
     */
-    public ExpListViewAdapterWithCheckbox(Context context, ArrayList<String> listDataGroup,          HashMap<String, List<String>> listDataChild){
+    public ExpListViewAdapterWithCheckbox(Context context, ArrayList<String> listDataGroup, HashMap<String, List<String>> listDataChild) {
 
         mContext = context;
         mListDataGroup = listDataGroup;
@@ -68,18 +70,23 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
         // Initialize our hashmap containing our check states here
         mChildCheckStates = new HashMap<Integer, boolean[]>();
+        mGroupCheckStates = new HashMap<Integer, IndeterminateCheckBox>();
     }
 
-    public int getNumberOfCheckedItemsInGroup(int mGroupPosition)
-    {
+
+    public int getNumberOfCheckedItemsInGroup(int mGroupPosition) {
         boolean getChecked[] = mChildCheckStates.get(mGroupPosition);
-       int count = 0;
-        if(getChecked != null) {
+        int count = 0;
+        if (getChecked != null) {
             for (int j = 0; j < getChecked.length; ++j) {
                 if (getChecked[j] == true) count++;
             }
         }
-        return  count;
+        return count;
+    }
+
+    public IndeterminateCheckBox getChk() {
+        return groupViewHolder.mGroupCheckBox;
     }
 
     @Override
@@ -102,18 +109,16 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
         return groupPosition;
     }
 
-
     @Override
-    public View getGroupView(int groupPosition, boolean isExpanded,
-                             View convertView, ViewGroup parent) {
-
+    public View getGroupView(final int groupPosition, boolean isExpanded,
+                             View convertView, final ViewGroup parent) {
         //  I passed a text string into an activity holding a getter/setter
         //  which I passed in through "ExpListGroupItems".
         //  Here is where I call the getter to get that text
         groupText = getGroup(groupPosition);
+        final View v = convertView;
 
         if (convertView == null) {
-
             LayoutInflater inflater = (LayoutInflater) mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.list_group, null);
@@ -123,29 +128,45 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
             groupViewHolder.mGroupText = (TextView) convertView.findViewById(R.id.lblListHeader);
 
-            groupViewHolder.mCheckBox = (IndeterminateCheckBox) convertView.findViewById(R.id.lstcheckBox1);
-
-            groupViewHolder.mCheckBox .setOnStateChangedListener(new IndeterminateCheckBox.OnStateChangedListener(){
-                public void onStateChanged(IndeterminateCheckBox check, @Nullable Boolean state) {
-                    if (state == null) {
-                        // The new state is 'indeterminate'
-                    } else if (state) {
-                        System.out.println("Checked");
-                        // The new state is 'checked'
-                    } else {
-                        // The new state is 'unchecked'
-                    }
-                }
-            });
-
+            groupViewHolder.mGroupCheckBox = (IndeterminateCheckBox) convertView.findViewById(R.id.lstcheckBox1);
+            System.out.println("PUtting: " + groupPosition);
+            mGroupCheckStates.put(groupPosition, groupViewHolder.mGroupCheckBox);
             convertView.setTag(groupViewHolder);
         } else {
-
             groupViewHolder = (GroupViewHolder) convertView.getTag();
         }
 
-        groupViewHolder.mGroupText.setText(groupText);
+ /*       if (mGroupCheckStates.containsKey(mGroupPosition))
+        {
+            boolean getChecked[] = mChildCheckStates.get(mGroupPosition);
+            groupViewHolder.mGroupCheckBox.setChecked(getChecked[mChildPosition]);
+        } else {
+            boolean getChecked[] = new boolean[getChildrenCount(mGroupPosition)];
 
+            // add getChecked[] to the mChildCheckStates hashmap using mGroupPosition as the key
+            mChildCheckStates.put(mGroupPosition, getChecked);
+
+            // set the check state of this position's checkbox based on the
+            // boolean value of getChecked[position]
+            groupViewHolder.mGroupCheckBox.setChecked(false);
+        }*/
+        groupViewHolder.mGroupText.setText(groupText);
+        groupViewHolder.mGroupCheckBox.setOnStateChangedListener(new IndeterminateCheckBox.OnStateChangedListener() {
+            public void onStateChanged(IndeterminateCheckBox check, @Nullable Boolean state) {
+                boolean getChecked[] = new boolean[getChildrenCount(groupPosition)];
+                for (int i = 0; i < getChildrenCount(groupPosition); i++) {
+                    if (state == null) {
+                        // do nothing
+                    }else if (state) {
+                        getChecked[i] = true;
+                    } else {
+                        getChecked[i] = false;
+                    }
+                }
+                mChildCheckStates.put(groupPosition, getChecked);
+                notifyDataSetChanged();
+            }
+        });
         return convertView;
     }
 
@@ -171,7 +192,7 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
 
     @Override
-    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+    public View getChildView(final int groupPosition, int childPosition, boolean isLastChild, View convertView, final ViewGroup parent) {
 
         final int mGroupPosition = groupPosition;
         final int mChildPosition = childPosition;
@@ -192,30 +213,27 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
             childViewHolder.mChildText = (TextView) convertView
                     .findViewById(R.id.lblListItem);
 
-            childViewHolder.mCheckBox = (CheckBox) convertView
+            childViewHolder.mChildCheckBox = (CheckBox) convertView
                     .findViewById(R.id.lstcheckBox);
 
             convertView.setTag(R.layout.list_item, childViewHolder);
-
         } else {
-
             childViewHolder = (ChildViewHolder) convertView
                     .getTag(R.layout.list_item);
         }
-
         childViewHolder.mChildText.setText(childText);
 
 		/*
-		 * You have to set the onCheckChangedListener to null
+         * You have to set the onCheckChangedListener to null
 		 * before restoring check states because each call to
 		 * "setChecked" is accompanied by a call to the
 		 * onCheckChangedListener
 		*/
-        childViewHolder.mCheckBox.setOnCheckedChangeListener(null);
+        childViewHolder.mChildCheckBox.setOnCheckedChangeListener(null);
 
         if (mChildCheckStates.containsKey(mGroupPosition)) {
-			/*
-			 * if the hashmap mChildCheckStates<Integer, Boolean[]> contains
+            /*
+             * if the hashmap mChildCheckStates<Integer, Boolean[]> contains
 			 * the value of the parent view (group) of this child (aka, the key),
 			 * then retrive the boolean array getChecked[]
 			*/
@@ -223,15 +241,13 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
             // set the check state of this position's checkbox based on the
             // boolean value of getChecked[position]
-            childViewHolder.mCheckBox.setChecked(getChecked[mChildPosition]);
-
+            childViewHolder.mChildCheckBox.setChecked(getChecked[mChildPosition]);
         } else {
-
-			/*
-			 * if the hashmap mChildCheckStates<Integer, Boolean[]> does not
+            /*
+             * if the hashmap mChildCheckStates<Integer, Boolean[]> does not
 			 * contain the value of the parent view (group) of this child (aka, the key),
 			 * (aka, the key), then initialize getChecked[] as a new boolean array
-			 *  and set it's size to the total number of children associated with
+			 *  and set; it's size to the total number of children associated with
 			 *  the parent group
 			*/
             boolean getChecked[] = new boolean[getChildrenCount(mGroupPosition)];
@@ -241,30 +257,54 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
             // set the check state of this position's checkbox based on the
             // boolean value of getChecked[position]
-            childViewHolder.mCheckBox.setChecked(false);
+            childViewHolder.mChildCheckBox.setChecked(false);
         }
 
-        childViewHolder.mCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
+        childViewHolder.mChildCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                boolean getChecked[] = mChildCheckStates.get(mGroupPosition);
+                getChecked[mChildPosition] = isChecked;
+                mChildCheckStates.put(mGroupPosition, getChecked);
+                if (isAllValuesChecked(getChecked)) {
+                    System.out.println("All checked");
+                    mGroupCheckStates.get(mGroupPosition).setChecked(true);
 
-                if (isChecked) {
-
-                    boolean getChecked[] = mChildCheckStates.get(mGroupPosition);
-                    getChecked[mChildPosition] = isChecked;
-                    mChildCheckStates.put(mGroupPosition, getChecked);
+                } else if (isNotAllValuesChecked(getChecked)) {
+                    System.out.println("All of them Un-checked");
+                    mGroupCheckStates.get(mGroupPosition).setChecked(false);
 
                 } else {
-
-                    boolean getChecked[] = mChildCheckStates.get(mGroupPosition);
-                    getChecked[mChildPosition] = isChecked;
-                    mChildCheckStates.put(mGroupPosition, getChecked);
+                    mGroupCheckStates.get(mGroupPosition).setIndeterminate(true);
+                    System.out.println("Some of them checked");
                 }
             }
         });
 
         return convertView;
+    }
+
+    /*
+ * Find if all values are checked.
+ */
+    protected boolean isAllValuesChecked(boolean[] mChecked) {
+
+        for (int i = 0; i < mChecked.length; i++) {
+            if (!mChecked[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected boolean isNotAllValuesChecked(boolean[] mChecked) {
+
+        for (int i = 0; i < mChecked.length; i++) {
+            if (mChecked[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -277,15 +317,16 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
         return false;
     }
 
+
     public final class GroupViewHolder {
 
         TextView mGroupText;
-        IndeterminateCheckBox mCheckBox;
+        IndeterminateCheckBox mGroupCheckBox;
     }
 
     public final class ChildViewHolder {
 
         TextView mChildText;
-        CheckBox mCheckBox;
+        CheckBox mChildCheckBox;
     }
 }
